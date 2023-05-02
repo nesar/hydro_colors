@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "hydro_colors"
+  site-url: "https://nesar.github.io/hydro_colors"
+  description: "painting HAC"
+  repo-branch: main
+  repo-url: "https://github.com/nesar/hydro_colors"
