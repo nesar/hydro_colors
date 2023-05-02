@@ -4,6 +4,6 @@ project:
 website:
   title: "hydro_colors"
   site-url: "https://nesar.github.io/hydro_colors"
-  description: "painting HAC"
+  description: "painting HACC hydro simulations using Stellar Population Synthesis"
   repo-branch: main
   repo-url: "https://github.com/nesar/hydro_colors"
