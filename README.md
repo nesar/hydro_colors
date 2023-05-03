@@ -22,7 +22,8 @@ from hydro_colors.load_sps_library import STELLAR_LIBRARY_DIR
 #### Then the galaxy-star catalog from HACC is loaded
 
 ``` python
-galaxy_tags, _, _, _, _, _, _, _ = hc.load_sim_stellar_catalog.load_hacc_galaxy_data()
+galaxy_star_catalog_file = '../hydro_colors/data/test_hacc_stellar_catalog/Gals_Z0.txt'
+galaxy_tags, _, _, _, _, _, _, _ = hc.load_sim_stellar_catalog.load_hacc_galaxy_data(galaxy_star_catalog_file)
 ```
 
 #### After selecting a unique galaxy tag, we calculate the SED.
@@ -33,9 +34,9 @@ galaxy_tags, _, _, _, _, _, _, _ = hc.load_sim_stellar_catalog.load_hacc_galaxy_
 galaxy_number = 1
 unique_galaxy_tag = np.unique(galaxy_tags)[galaxy_number]
 
-spec_wave_ssp, spec_flux_ssp, spec_csp, flux_proxy, gal_stellar_mass = hc.calculate_csp.calc_fluxes_for_galaxy('../hydro_colors/data/test_hacc_stellar_catalog/Gals_Z0.txt',
-                       unique_galaxy_tag,
-                       STELLAR_LIBRARY_DIR)
+spec_wave_ssp, spec_flux_ssp, spec_csp, flux_proxy, gal_stellar_mass = hc.calculate_csp.calc_fluxes_for_galaxy(galaxy_star_catalog_file,
+                                                                                                               unique_galaxy_tag,
+                                                                                                               STELLAR_LIBRARY_DIR)
 ```
 
     Library shape:  (22, 94, 1963)
@@ -47,7 +48,6 @@ spec_wave_ssp, spec_flux_ssp, spec_csp, flux_proxy, gal_stellar_mass = hc.calcul
 fig, a = plt.subplots(2,1, figsize=(14, 12), sharex=True, sharey=False)
 
 # Normalize the array vals so they can be mapped to a color
-# c_norm = mpl.colors.Normalize(vmin=np.min(np.log10(mass[gal_tag_cond])), vmax=np.max(np.log10(mass[gal_tag_cond])))
 c_norm = mpl.colors.Normalize(vmin=np.min(flux_proxy), vmax=np.max(flux_proxy))
 
 
