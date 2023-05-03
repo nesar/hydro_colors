@@ -10,9 +10,7 @@ pip install hydro_colors
 
 ## Simple implementation to HACC hydro data
 
-``` python
-### First we import the following modules of hydro_colors
-```
+#### First we import the following modules of hydro_colors
 
 ``` python
 import hydro_colors as hc
@@ -21,9 +19,15 @@ from hydro_colors.calculate_csp import calc_fluxes_for_galaxy
 from hydro_colors.load_sps_library import STELLAR_LIBRARY_DIR
 ```
 
+#### Then the galaxy-star catalog from HACC is loaded
+
 ``` python
 galaxy_tags, _, _, _, _, _, _, _ = hc.load_sim_stellar_catalog.load_hacc_galaxy_data()
 ```
+
+#### After selecting a unique galaxy tag, we calculate the SED.
+
+#### This is the rest-frame SED is due to spectral emission alone, and without dust attenuation.
 
 ``` python
 galaxy_number = 1
@@ -37,24 +41,70 @@ spec_wave_ssp, spec_flux_ssp, spec_csp, flux_proxy, gal_stellar_mass = hc.calcul
     Library shape:  (22, 94, 1963)
     Wavelength shape:  (1963,)
 
+#### Finally, we plot SEDs from both SSPs and CSPs
+
 ``` python
-plt.figure()
-plt.plot(spec_wave_ssp, spec_flux_ssp.T)
-plt.plot(spec_wave_ssp, spec_csp)
-plt.xscale('log')
-plt.yscale('log')
-plt.xlim(1e2, 1e3)
+fig, a = plt.subplots(2,1, figsize=(14, 12), sharex=True, sharey=False)
+
+# Normalize the array vals so they can be mapped to a color
+# c_norm = mpl.colors.Normalize(vmin=np.min(np.log10(mass[gal_tag_cond])), vmax=np.max(np.log10(mass[gal_tag_cond])))
+c_norm = mpl.colors.Normalize(vmin=np.min(flux_proxy), vmax=np.max(flux_proxy))
+
+
+# Pick a colormap
+c_map  = mpl.cm.coolwarm
+
+# Scalar mappable of normalized array to colormap
+s_map  = mpl.cm.ScalarMappable(cmap=c_map, norm=c_norm)
+s_map.set_array([])
+
+
+for idx in range(spec_flux_ssp.shape[0]):
+    
+    # spec_flux_ssp[idx] = spec_ssp(age_hydro[ssp_id], metal_hydro[ssp_id], mass[ssp_id])
+    a[0].plot(spec_wave_ssp, spec_flux_ssp[idx], 
+              # color=s_map.to_rgba(np.log10(mass[ssp_id])), 
+              color=s_map.to_rgba(flux_proxy[idx]), 
+              alpha=0.5)
+
+    
+# Adding the colorbar
+fig.colorbar(s_map, ax = a[0], 
+             orientation = 'horizontal', 
+             # label=r'stellar mass', pad=0.2)
+             label=r'flux proxy', pad=0.2)
+    
+
+#####################################################################
+
+a[1].plot(spec_wave_ssp, spec_csp)
+
+
+# a[0].set_xlim(3e3, 1e4)
+# a[1].set_yscale('log')
+# a[1].set_xscale('log')
+a[1].set_xlim(3e3, 1e4)
+
+# a[0].set_yscale('log')
+
+a[0].set_xlabel(r'${\rm wavelength\ [\AA]}$', fontsize = 'x-large')
+a[1].set_xlabel(r'${\rm wavelength\ [\AA]}$', fontsize = 'x-large')
+a[0].set_ylabel(r'$L_{\rm SSP}(\lambda)\ {\rm [L_{\odot}/\AA]}$', fontsize = 'x-large')
+a[1].set_ylabel(r'$L_{\rm CSP}(\lambda)\ {\rm [L_{\odot}/\AA]}$', fontsize = 'x-large')
+
+
+plt.show()
 ```
 
-    (100.0, 1000.0)
+![](index_files/figure-commonmark/cell-5-output-1.png)
 
-![](index_files/figure-commonmark/cell-7-output-2.png)
+#### Finally we plot the SEDs of the galaxy, along with SEDs of the individual SSPs
 
 ## Under the hood
 
 ``` python
 # ssp_interpolation import *
-from hydro_colors.load_ssp_library import *
+from hydro_colors.load_sps_library import *
 from hydro_colors.load_sim_stellar_catalog import *
 ```
 
@@ -82,4 +132,4 @@ plt.show()
     Library shape:  (22, 94, 1963)
     Wavelength shape:  (1963,)
 
-![](index_files/figure-commonmark/cell-9-output-2.png)
+![](index_files/figure-commonmark/cell-7-output-2.png)
