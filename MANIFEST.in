@@ -2,4 +2,6 @@ include settings.ini
 include LICENSE
 include CONTRIBUTING.md
 include README.md
+include hydro_colors/data/sps_library_data/*.npy
+include hydro_colors/data/test_hacc_stellar_catalog/*.txt
 recursive-exclude * __pycache__

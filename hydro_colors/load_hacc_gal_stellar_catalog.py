@@ -10,33 +10,36 @@ import matplotlib.pylab as plt
 
 # %% ../nbs/01_load_hacc_gal_stellar_catalog.ipynb 4
 def _convert_metallicity(hacc_metallicity, Z_solar):
-    return hacc_metallicity/Z_solar
+    return hacc_metallicity / Z_solar
+
 
 def _convert_age(hacc_age, H0):
-    '''
+    """
     ## (hacc_age is in 1/H0 units)
     # H0 = (73 km/s/Mpc) x (1 Mpc/3.08 x 1019 km) = 2.37 x 10−18 1/s
     # https://www.e-education.psu.edu/astro801/content/l10_p5.html
-    '''
-    
-    H0_per_sec = H0*(1/(3.08*1e19)) #seconds
-    one_over_H0 = 1/H0_per_sec/(3.1536*1e16)
-    age_hydro_gyr = hacc_age*one_over_H0
-    
+    """
+
+    H0_per_sec = H0 * (1 / (3.08 * 1e19))  # seconds
+    one_over_H0 = 1 / H0_per_sec / (3.1536 * 1e16)
+    age_hydro_gyr = hacc_age * one_over_H0
+
     return age_hydro_gyr
 
 # %% ../nbs/01_load_hacc_gal_stellar_catalog.ipynb 5
-def load_fsps_spectral_library(fileIn = '/lcrc/project/cosmo_ai/nramachandra/Projects/Hydro_paint/Data/fromLJ/Gals_Z0.txt'
-                              ): 
-    gal_tag, stellar_idx, metal, mass, age, x, y, z = np.loadtxt(fileIn, 
-                                                                 skiprows=1, 
-                                                                 unpack=True)
+def load_fsps_spectral_library(
+    fileIn="../hydro_colors/data/test_hacc_stellar_catalog/Gals_Z0.txt",
+):
+
+    gal_tag, stellar_idx, metal, mass, age, x, y, z = np.loadtxt(
+        fileIn, skiprows=1, unpack=True
+    )
     Z_SOLAR_HACC = 0.012899
     Z_SOLAR_PADOVA = 0.019
-    
+
     metal_z_solar = _convert_metallicity(metal, Z_SOLAR_PADOVA)
-    
+
     H0 = 71.0
     age_gyr = _convert_age(age, H0)
-    
+
     return gal_tag, stellar_idx, metal_z_solar, mass, age_gyr, x, y, z
