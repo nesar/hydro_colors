@@ -9,11 +9,12 @@ import os
 import matplotlib.pylab as plt
 
 # %% ../nbs/00_load_sps_library.ipynb 4
-def load_fsps_spectral_library(dirIn="../hydro_colors/data/sps_library_data/"):
+def load_fsps_spectral_library(dirIn = '../hydro_colors/data/sps_library_data/'
+): 
     spec_flux = np.load(os.path.join(dirIn, "ssp_spec_flux_lines.npy"))
     spec_wave = np.load(os.path.join(dirIn, "ssp_spec_wave.npy"))
-    print("Library shape: ", spec_flux.shape)
-    print("Wavelength shape: ", spec_wave.shape)
+    print('Library shape: ', spec_flux.shape) 
+    print('Wavelength shape: ', spec_wave.shape)
     return spec_flux, spec_wave
 
 # %% ../nbs/00_load_sps_library.ipynb 5
@@ -26,15 +27,15 @@ def _load_fsps_age(dirIn):
 # %% ../nbs/00_load_sps_library.ipynb 6
 def _load_fsps_metallicity(dirIn, Z_solar):
     Z_legend = np.load(os.path.join(dirIn, "zlegend.npy"))
-    Z_padova = Z_legend / Z_solar
+    Z_padova = Z_legend/Z_solar
     return Z_padova
 
 # %% ../nbs/00_load_sps_library.ipynb 7
-def load_fsps_age_metallicity(dirIn="../hydro_colors/data/sps_library_data/"):
-
+def load_fsps_age_metallicity(dirIn = '../hydro_colors/data/sps_library_data/'):
+    
     age_fsps_gyr = _load_fsps_age(dirIn)
-
+    
     Z_solar_padova = 0.019
     Z_padova = _load_fsps_metallicity(dirIn, Z_solar_padova)
-
+    
     return age_fsps_gyr, Z_padova
