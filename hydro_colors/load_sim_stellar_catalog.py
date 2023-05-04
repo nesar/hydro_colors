@@ -44,7 +44,7 @@ def load_hacc_galaxy_data(fileIn:str=GALS_DIR+GALS_FILE, # Input galaxy catalog 
                               H0:np.float32=H0, # Hubble constant
                               ) -> tuple: # galaxy_tag, stellar_indices, metallicity, mass, age, x, y, z
     
-    gal_tag, stellar_idx, metal, mass, age, x, y, z = np.loadtxt(fileIn, 
+    gal_tag, stellar_idx, metal, mass, age, x, y, z, vx, vy, vz = np.loadtxt(fileIn, 
                                                                  skiprows=1, 
                                                                  unpack=True)
     
@@ -52,4 +52,4 @@ def load_hacc_galaxy_data(fileIn:str=GALS_DIR+GALS_FILE, # Input galaxy catalog 
     
     age_gyr = _convert_age(age, H0)
     
-    return gal_tag, stellar_idx, metal_z_solar, mass, age_gyr, x, y, z
+    return gal_tag, stellar_idx, metal_z_solar, mass, age_gyr, x, y, z, vx, vy, vz

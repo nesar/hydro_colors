@@ -23,15 +23,27 @@ from hydro_colors.load_sps_library import STELLAR_LIBRARY_DIR
 
 ``` python
 galaxy_star_catalog_file = '../hydro_colors/data/test_hacc_stellar_catalog/Gals_Z0.txt'
-galaxy_tags, _, _, _, _, _, _, _ = hc.load_sim_stellar_catalog.load_hacc_galaxy_data(galaxy_star_catalog_file)
+galaxy_tags, _, _, _, _, _, _, _, _, _, _ = hc.load_sim_stellar_catalog.load_hacc_galaxy_data(galaxy_star_catalog_file)
 ```
+
+``` python
+galaxy_number = 4
+unique_galaxy_tag = np.unique(galaxy_tags)[galaxy_number]
+
+spec_wave_ssp, spec_flux_ssp, spec_csp, flux_proxy, gal_stellar_mass = hc.calculate_csp.calc_fluxes_for_galaxy(galaxy_star_catalog_file,
+                                                                                                               unique_galaxy_tag,
+                                                                                                               STELLAR_LIBRARY_DIR)
+```
+
+    Library shape:  (22, 94, 1963)
+    Wavelength shape:  (1963,)
 
 #### After selecting a unique galaxy tag, we calculate the SED.
 
 #### This is the rest-frame SED is due to spectral emission alone, and without dust attenuation.
 
 ``` python
-galaxy_number = 1
+galaxy_number = 4
 unique_galaxy_tag = np.unique(galaxy_tags)[galaxy_number]
 
 spec_wave_ssp, spec_flux_ssp, spec_csp, flux_proxy, gal_stellar_mass = hc.calculate_csp.calc_fluxes_for_galaxy(galaxy_star_catalog_file,
@@ -96,7 +108,7 @@ a[1].set_ylabel(r'$L_{\rm CSP}(\lambda)\ {\rm [L_{\odot}/\AA]}$', fontsize = 'x-
 plt.show()
 ```
 
-![](index_files/figure-commonmark/cell-5-output-1.png)
+![](index_files/figure-commonmark/cell-6-output-1.png)
 
 #### Finally we plot the SEDs of the galaxy, along with SEDs of the individual SSPs
 
@@ -111,7 +123,7 @@ from hydro_colors.load_sim_stellar_catalog import *
 ``` python
 spec_flux, spec_wave = load_fsps_spectral_library()
 age_fsps_gyr, Z_padova_fsps = load_fsps_age_metallicity()
-gal_tag, stellar_idx, metal_hydro, mass, age_hydro, x, y, z = load_hacc_galaxy_data()
+gal_tag, stellar_idx, metal_hydro, mass, age_hydro, x, y, z, vx, vy, vz = load_hacc_galaxy_data()
 
 
 f, a = plt.subplots(1,2, figsize=(14, 3))
@@ -132,4 +144,4 @@ plt.show()
     Library shape:  (22, 94, 1963)
     Wavelength shape:  (1963,)
 
-![](index_files/figure-commonmark/cell-7-output-2.png)
+![](index_files/figure-commonmark/cell-8-output-2.png)

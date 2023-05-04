@@ -42,7 +42,7 @@ def calc_fluxes_for_galaxy(gal_file_in:str=GALS_DIR+GALS_FILE, # HACC stellar ca
     
     spec_flux_library, spec_wave_library = load_fsps_spectral_library(spectral_library_path)
     age_fsps_gyr, Z_padova_fsps = load_fsps_age_metallicity(spectral_library_path)
-    gal_tags, _, metal_hydro, mass, age_hydro, _, _, _ = load_hacc_galaxy_data(gal_file_in)
+    gal_tags, _, metal_hydro, mass, age_hydro, _, _, _, _, _, _ = load_hacc_galaxy_data(gal_file_in)
 
 
     gal_tag_cond = np.where(gal_tags == unique_gal_tag)
