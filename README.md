@@ -10,7 +10,7 @@ pip install hydro_colors
 
 ## Simple implementation to HACC hydro data
 
-#### First we import the following modules of hydro_colors
+#### 1. First we import the following modules of hydro_colors
 
 ``` python
 import hydro_colors as hc
@@ -19,42 +19,30 @@ from hydro_colors.calculate_csp import calc_fluxes_for_galaxy
 from hydro_colors.load_sps_library import STELLAR_LIBRARY_DIR
 ```
 
-#### Then the galaxy-star catalog from HACC is loaded
+#### 2. Then the galaxy-star catalog from HACC is loaded
 
 ``` python
-galaxy_star_catalog_file = '../hydro_colors/data/test_hacc_stellar_catalog/Gals_Z0.txt'
-galaxy_tags, _, _, _, _, _, _, _, _, _, _ = hc.load_sim_stellar_catalog.load_hacc_galaxy_data(galaxy_star_catalog_file)
+galaxy_star_catalog_file = '../hydro_colors/data/test_hacc_stellar_catalog/Gals_Z0_576.txt'
+galaxy_tags, stellar_idx, _, _, _, x, y, z, _, _, _ = hc.load_sim_stellar_catalog.load_hacc_galaxy_data(galaxy_star_catalog_file)
 ```
+
+#### 3. After selecting a unique galaxy tag, we calculate the SED. This is the rest-frame SED is due to spectral emission alone, and without dust attenuation.
 
 ``` python
 galaxy_number = 4
 unique_galaxy_tag = np.unique(galaxy_tags)[galaxy_number]
+print('Number of galaxies: %d'%np.unique(galaxy_tags).shape[0])
 
 spec_wave_ssp, spec_flux_ssp, spec_csp, flux_proxy, gal_stellar_mass = hc.calculate_csp.calc_fluxes_for_galaxy(galaxy_star_catalog_file,
                                                                                                                unique_galaxy_tag,
                                                                                                                STELLAR_LIBRARY_DIR)
 ```
 
+    Number of galaxies: 10
     Library shape:  (22, 94, 1963)
     Wavelength shape:  (1963,)
 
-#### After selecting a unique galaxy tag, we calculate the SED.
-
-#### This is the rest-frame SED is due to spectral emission alone, and without dust attenuation.
-
-``` python
-galaxy_number = 4
-unique_galaxy_tag = np.unique(galaxy_tags)[galaxy_number]
-
-spec_wave_ssp, spec_flux_ssp, spec_csp, flux_proxy, gal_stellar_mass = hc.calculate_csp.calc_fluxes_for_galaxy(galaxy_star_catalog_file,
-                                                                                                               unique_galaxy_tag,
-                                                                                                               STELLAR_LIBRARY_DIR)
-```
-
-    Library shape:  (22, 94, 1963)
-    Wavelength shape:  (1963,)
-
-#### Finally, we plot SEDs from both SSPs and CSPs
+#### 4. Finally, we plot SEDs from both SSPs and CSPs
 
 ``` python
 fig, a = plt.subplots(2,1, figsize=(14, 12), sharex=True, sharey=False)
@@ -92,12 +80,12 @@ fig.colorbar(s_map, ax = a[0],
 a[1].plot(spec_wave_ssp, spec_csp)
 
 
-# a[0].set_xlim(3e3, 1e4)
+# a[0].set_ylim(1e-9, 1e-6)
+# a[0].set_yscale('log')
 # a[1].set_yscale('log')
 # a[1].set_xscale('log')
 a[1].set_xlim(3e3, 1e4)
 
-# a[0].set_yscale('log')
 
 a[0].set_xlabel(r'${\rm wavelength\ [\AA]}$', fontsize = 'x-large')
 a[1].set_xlabel(r'${\rm wavelength\ [\AA]}$', fontsize = 'x-large')
@@ -108,14 +96,85 @@ a[1].set_ylabel(r'$L_{\rm CSP}(\lambda)\ {\rm [L_{\odot}/\AA]}$', fontsize = 'x-
 plt.show()
 ```
 
-![](index_files/figure-commonmark/cell-6-output-1.png)
+![](index_files/figure-commonmark/cell-5-output-1.png)
 
-#### Finally we plot the SEDs of the galaxy, along with SEDs of the individual SSPs
+### One can also find luminosity profiles for the simulated galaxies
+
+#### 1. First we project the luminosity on to grids
+
+``` python
+gal_tag_cond = np.where(galaxy_tags == unique_galaxy_tag)
+
+
+nbins = 40
+xedges = np.linspace(x[gal_tag_cond].min(), x[gal_tag_cond].max(), nbins) 
+yedges = np.linspace(y[gal_tag_cond].min(), y[gal_tag_cond].max(), nbins) 
+
+
+H, xedges, yedges, binnumber = stats.binned_statistic_2d(x[gal_tag_cond], y[gal_tag_cond], 
+                                                         None, 'count', bins=[xedges, yedges],
+                                                         expand_binnumbers=True)
+
+
+
+grid_flux = np.zeros_like(H)
+
+for idx, ssp_id in enumerate(gal_tag_cond[0]):
+
+    grid_flux[binnumber[:, idx][0]-1, binnumber[:, idx][1]-1] = np.trapz(spec_flux_ssp[idx], spec_wave_ssp)
+```
+
+#### 2. Next we plot the stellar density and luminosity profiles
+
+``` python
+fig, ax = plt.subplots(1, 2, figsize=(14, 5))
+c_norm = mpl.colors.Normalize(vmin=1, vmax=np.max(H))
+c_map  = mpl.cm.coolwarm
+
+
+ax[0].set_title('Particle binning')
+
+im = ax[0].imshow(H, interpolation='nearest', origin='lower', 
+                extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]], 
+                cmap=c_map)
+
+fig.colorbar(im, ax = ax[0], 
+             orientation = 'vertical', 
+             # label=r'stellar mass', pad=0.2)
+             label=r'stellar density', pad=0.2)
+
+
+# Normalize the array vals so they can be mapped to a color
+c_norm = mpl.colors.Normalize(vmin=np.min(grid_flux.min()), vmax=np.max(grid_flux))
+c_norm = mpl.colors.Normalize(vmin=0.004, vmax=np.max(grid_flux))
+
+# # Pick a colormap
+# c_map  = mpl.cm.magma
+
+
+ax[1].set_title('Luminosity profile')
+im = ax[1].imshow(grid_flux, interpolation='nearest', origin='lower', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]], cmap=c_map)
+
+# Adding the colorbar
+fig.colorbar(im, ax = ax[1], 
+             orientation = 'vertical', 
+             # label=r'stellar mass', pad=0.2)
+             label=r'Luminosity', pad=0.2)
+
+
+ax[0].set_xlabel('x[Mpc]')
+ax[0].set_ylabel('y[Mpc]')
+ax[1].set_xlabel('x[Mpc]')
+ax[1].set_ylabel('y[Mpc]')
+
+plt.show()
+```
+
+![](index_files/figure-commonmark/cell-7-output-1.png)
 
 ## Under the hood
 
 ``` python
-# ssp_interpolation import *
 from hydro_colors.load_sps_library import *
 from hydro_colors.load_sim_stellar_catalog import *
 ```
@@ -144,4 +203,4 @@ plt.show()
     Library shape:  (22, 94, 1963)
     Wavelength shape:  (1963,)
 
-![](index_files/figure-commonmark/cell-8-output-2.png)
+![](index_files/figure-commonmark/cell-9-output-2.png)
