@@ -97,8 +97,12 @@ plt.show()
 ``` python
 gal_tag_cond = np.where(galaxy_tags == unique_galaxy_tag)
 
-x_centered_scaled =  (x[gal_tag_cond] - np.min(x[gal_tag_cond]))/(np.max(x[gal_tag_cond]) - np.min(x[gal_tag_cond]))
-y_centered_scaled =  (y[gal_tag_cond] - np.min(y[gal_tag_cond]))/(np.max(y[gal_tag_cond]) - np.min(y[gal_tag_cond]))
+# x_centered_scaled =  (x[gal_tag_cond] - np.min(x[gal_tag_cond]))/(np.max(x[gal_tag_cond]) - np.min(x[gal_tag_cond]))
+# y_centered_scaled =  (y[gal_tag_cond] - np.min(y[gal_tag_cond]))/(np.max(y[gal_tag_cond]) - np.min(y[gal_tag_cond]))
+
+x_centered_scaled =  (x[gal_tag_cond] - np.mean(x[gal_tag_cond]))/(np.max(x[gal_tag_cond]) - np.min(x[gal_tag_cond]))
+y_centered_scaled =  (y[gal_tag_cond] - np.mean(y[gal_tag_cond]))/(np.max(y[gal_tag_cond]) - np.min(y[gal_tag_cond]))
+
 nbins = 60
 
 
@@ -114,7 +118,6 @@ H, xedges, yedges, binnumber = stats.binned_statistic_2d(x_centered_scaled, y_ce
 grid_flux = np.zeros_like(H)
 
 for idx, ssp_id in enumerate(gal_tag_cond[0]):
-
     grid_flux[binnumber[:, idx][0]-1, binnumber[:, idx][1]-1] = np.trapz(spec_flux_ssp[idx], spec_wave_ssp)
 ```
 
@@ -170,60 +173,83 @@ plt.show()
 
 ![](index_files/figure-commonmark/cell-7-output-1.png)
 
-``` python
-def azimuthalAverage(image, center=None):
-    """
-    Calculate the azimuthally averaged radial profile.
-
-    image - The 2D image
-    center - The [x,y] pixel coordinates used as the center. The default is 
-             None, which then uses the center of the image (including 
-             fracitonal pixels).
-    
-    """
-    # Calculate the indices from the image
-    y, x = np.indices(image.shape)
-
-    if not center:
-        center = np.array([(x.max()-x.min())/2.0, (y.max()-y.min())/2.0])
-
-    r = np.hypot(x - center[0], y - center[1])
-
-    # Get sorted radii
-    ind = np.argsort(r.flat)
-    r_sorted = r.flat[ind]
-    i_sorted = image.flat[ind]
-
-    # Get the integer part of the radii (bin size = 1)
-    r_int = r_sorted.astype(int)
-
-    # Find all pixels that fall within each radial bin.
-    deltar = r_int[1:] - r_int[:-1]  # Assumes all radii represented
-    rind = np.where(deltar)[0]       # location of changed radius
-    nr = rind[1:] - rind[:-1]        # number of radius bin
-    
-    # Cumulative sum to figure out sums for each radius bin
-    csim = np.cumsum(i_sorted, dtype=float)
-    tbin = csim[rind[1:]] - csim[rind[:-1]]
-
-    radial_prof = tbin / nr
-
-    return radial_prof
-```
+### Radial mass profile of the galaxy
 
 ``` python
-fig, ax = plt.subplots(1, 2, figsize=(13, 3))
+def cart2pol(x, y):
+    rho = np.sqrt(x**2 + y**2)
+    phi = np.arctan2(y, x)
+    return(rho, phi)
 
-ax[0].plot(azimuthalAverage(H), '-', alpha=0.6)
-ax[1].plot(azimuthalAverage(grid_flux), '-', alpha=0.6)
+radius, azimut = cart2pol(x_centered_scaled, y_centered_scaled)
+azimut += np.pi
 
-ax[0].set_ylabel('Stellar mass profile')
-ax[1].set_ylabel('Luminosity profile')
+# define binning
+rbins = np.linspace(0,radius.max(), 20)
+abins = np.linspace(0,2*np.pi, 2)
+
+
+subdivs = 40
+abins2 = np.linspace(0, 2 * np.pi, (len(abins) - 1) * subdivs + 1)
+
+
+
+#calculate histogram for mass density
+# hist, _, _ = np.histogram2d(azimut, radius, bins=(abins, rbins))
+hist, _, _, binnumbers = stats.binned_statistic_2d(azimut, radius, 
+                                                         None, 'count', bins=[abins, rbins],
+                                                         expand_binnumbers=True)
+
+
+# Luminosity
+grid_flux_polar = np.zeros_like(hist)
+
+for idx, ssp_id in enumerate(gal_tag_cond[0]):
+    grid_flux_polar[binnumbers[:, idx][0]-1, binnumbers[:, idx][1]-1] = np.trapz(spec_flux_ssp[idx], spec_wave_ssp)
+    
+    
+    
+
+A, R = np.meshgrid(abins, rbins)
+A2, R2 = np.meshgrid(abins2, rbins)
+
+# plot
+
+fig = plt.figure(figsize=(14 , 14))
+ax0 = plt.subplot(221, projection="polar")
+ax1 = plt.subplot(222)
+
+# pc = ax.pcolormesh(A, R, hist.T, cmap="magma_r")
+pc2 = ax0.pcolormesh(A2, R2, np.repeat(hist.T, subdivs, axis=1), cmap='gist_heat_r')
+pc3 = ax0.scatter(azimut, radius, alpha=1, marker='o', s=1, color='k')
+fig.colorbar(pc2, ax=ax0)
+
+ax1.plot(0.5*(rbins[1:] + rbins[:-1]), np.sum(hist, axis=0));
+ax1.set_xlabel('Normalized radius')
+ax1.set_ylabel('Density')
+
+
+ax2 = plt.subplot(223, projection="polar")
+ax3 = plt.subplot(224)
+
+# pc = ax.pcolormesh(A, R, hist.T, cmap="magma_r")
+pc3 = ax2.pcolormesh(A2, R2, np.repeat(grid_flux_polar.T, subdivs, axis=1), cmap='gist_heat_r')
+pc4 = ax2.scatter(azimut, radius, alpha=1, marker='o', s=1, color='k')
+fig.colorbar(pc3, ax=ax2)
+
+ax3.plot(0.5*(rbins[1:] + rbins[:-1]), np.sum(grid_flux_polar, axis=0));
+ax3.set_xlabel('Normalized radius')
+ax3.set_ylabel('Luminosity')
 ```
 
-    Text(0, 0.5, 'Luminosity profile')
+    /tmp/ipykernel_2275932/3123066502.py:45: MatplotlibDeprecationWarning: Auto-removal of grids by pcolor() and pcolormesh() is deprecated since 3.5 and will be removed two minor releases later; please call grid(False) first.
+      pc2 = ax0.pcolormesh(A2, R2, np.repeat(hist.T, subdivs, axis=1), cmap='gist_heat_r')
+    /tmp/ipykernel_2275932/3123066502.py:58: MatplotlibDeprecationWarning: Auto-removal of grids by pcolor() and pcolormesh() is deprecated since 3.5 and will be removed two minor releases later; please call grid(False) first.
+      pc3 = ax2.pcolormesh(A2, R2, np.repeat(grid_flux_polar.T, subdivs, axis=1), cmap='gist_heat_r')
 
-![](index_files/figure-commonmark/cell-9-output-2.png)
+    Text(0, 0.5, 'Luminosity')
+
+![](index_files/figure-commonmark/cell-8-output-3.png)
 
 ## Under the hood
 
@@ -256,4 +282,4 @@ plt.show()
     Library shape:  (22, 94, 1963)
     Wavelength shape:  (1963,)
 
-![](index_files/figure-commonmark/cell-11-output-2.png)
+![](index_files/figure-commonmark/cell-10-output-2.png)
