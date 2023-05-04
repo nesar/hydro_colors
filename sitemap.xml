@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://nesar.github.io/hydro_colors/load_sim_stellar_catalog.html</loc>
+    <lastmod>2023-05-04T22:15:27.479Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nesar.github.io/hydro_colors/index.html</loc>
+    <lastmod>2023-05-04T22:15:28.559Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nesar.github.io/hydro_colors/ssp_interpolation.html</loc>
+    <lastmod>2023-05-04T22:15:28.923Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nesar.github.io/hydro_colors/filter_convolve.html</loc>
+    <lastmod>2023-05-04T22:15:29.219Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nesar.github.io/hydro_colors/dust_attenuation.html</loc>
+    <lastmod>2023-05-04T22:15:29.515Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nesar.github.io/hydro_colors/cosmic_dimming.html</loc>
+    <lastmod>2023-05-04T22:15:29.799Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nesar.github.io/hydro_colors/load_sps_library.html</loc>
+    <lastmod>2023-05-04T22:15:30.139Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nesar.github.io/hydro_colors/calculate_csp.html</loc>
+    <lastmod>2023-05-04T22:15:30.515Z</lastmod>
+  </url>
+</urlset>
